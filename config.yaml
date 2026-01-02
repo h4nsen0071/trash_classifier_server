@@ -1,0 +1,40 @@
+model:
+  path: "models/best.pt"
+  type: "YOLO11s-cls"  # Classification model
+  device: "cpu"  # "cuda:0" nếu có GPU
+  confidence_threshold: 0.70  # Ngưỡng confidence cho classification
+
+classes:
+  # YOLO tự động sort theo alphabet: glass=0, paper=1, plastic=2
+  0: "glass"
+  1: "paper"
+  2: "plastic"
+
+bin_mapping:
+  glass: 3
+  paper: 1
+  plastic: 2
+
+validation:
+  # Image quality checks (tối ưu cho production)
+  cv_checks:
+    blur_threshold: 30        # Tăng lên - chỉ reject ảnh thật sự mờ
+    min_brightness: 40        # Độ sáng tối thiểu
+    max_brightness: 240       # Độ sáng tối đa
+    blank_std_threshold: 25   # Tăng lên - reject ảnh không có object rõ ràng
+  
+  # Model confidence checks
+  model_checks:
+    min_confidence: 0.75      # Tăng lên 0.75 cho độ tin cậy cao hơn
+
+server:
+  host: "0.0.0.0"
+  port: 5000
+  debug: false
+  workers: 4                  # Workers (Gunicorn) hoặc Threads (Waitress)
+  max_content_length: 5242880  # 5MB
+  request_timeout: 30         # Timeout 30s
+
+logging:
+  level: "WARNING"            # Chỉ log WARNING trở lên (giảm I/O)
+  file: "logs/server.log"

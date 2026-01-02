@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+.env
+
+# Logs
+logs/
+*.log
+
+# Models (large files)
+models/*.pt
+models/*.onnx
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test
+.pytest_cache/
+.coverage
+
+# ESP32 files (not for git)
+esp32_smart_bin.ino
+
+# Deployment docs (optional)
+PRODUCTION_GUIDE.md
+EC2_DEPLOYMENT.md
+
+# Docker (optional - comment out if you want to commit)
+Dockerfile

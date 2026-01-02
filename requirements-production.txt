@@ -1,0 +1,23 @@
+# Production Requirements - Minimal for EC2 Server
+# Chỉ dùng cho inference YOLO, không train
+
+# PyTorch CPU-only (nhẹ hơn 5GB so với CUDA version)
+--index-url https://download.pytorch.org/whl/cpu
+torch>=2.0.0
+torchvision>=0.15.0
+
+# Core server dependencies
+flask>=3.0.0
+gunicorn>=21.0.0
+opencv-python-headless>=4.8.0
+numpy>=1.24.0
+pillow>=10.0.0
+pyyaml>=6.0
+
+# YOLO inference
+ultralytics>=8.3.0
+
+# Other essentials (auto-installed by ultralytics but listed explicitly)
+requests>=2.23.0
+psutil>=5.8.0
+packaging>=21.0
