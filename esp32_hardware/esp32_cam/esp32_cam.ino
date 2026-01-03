@@ -101,58 +101,81 @@ void handleStatusCommand() {
 
 void setup() {
     // Khởi tạo Serial cho giao tiếp với Controller
-    // LƯU Ý: Serial này cũng được dùng để debug khi chưa nối Controller
+    // ⚠️ Serial KHÔNG được dùng để in log khi chạy với Controller!
     serialComm_init();
     
-    delay(1000);
+    delay(500);
     
-    // Startup message (sẽ thấy trên Serial Monitor khi chưa nối Controller)
-    Serial.println();
-    Serial.println("========================================");
-    Serial.println("    Smart Bin Camera v" FIRMWARE_VERSION);
-    Serial.println("========================================");
-    Serial.println();
+    #ifdef DEBUG_ENABLED
+        // Startup message (CHỈ hiện khi debug - test riêng CAM)
+        Serial.println();
+        Serial.println("========================================");
+        Serial.println("    Smart Bin Camera v" FIRMWARE_VERSION);
+        Serial.println("========================================");
+        Serial.println();
+    #endif
     
     // Khởi tạo Camera
-    Serial.print("[INIT] Camera... ");
-    if (!cameraHandler_init()) {
-        Serial.println("FAILED!");
-        Serial.println("[ERROR] Camera init failed. Check connections.");
-        // Không return, tiếp tục để có thể debug
-    } else {
-        Serial.println("OK");
-    }
+    #ifdef DEBUG_ENABLED
+        Serial.print("[INIT] Camera... ");
+    #endif
+    
+    bool cameraOK = cameraHandler_init();
+    
+    #ifdef DEBUG_ENABLED
+        if (!cameraOK) {
+            Serial.println("FAILED!");
+            Serial.println("[ERROR] Camera init failed. Check connections.");
+        } else {
+            Serial.println("OK");
+        }
+    #endif
     
     // Khởi tạo WiFi
-    Serial.print("[INIT] WiFi... ");
-    if (!wifiManager_init()) {
-        Serial.println("FAILED!");
-        Serial.println("[WARNING] WiFi not connected. Will retry...");
-    } else {
-        Serial.println("OK");
-        Serial.print("[INIT] IP: ");
-        Serial.println(wifiManager_getIP());
-    }
+    #ifdef DEBUG_ENABLED
+        Serial.print("[INIT] WiFi... ");
+    #endif
+    
+    bool wifiOK = wifiManager_init();
+    
+    #ifdef DEBUG_ENABLED
+        if (!wifiOK) {
+            Serial.println("FAILED!");
+            Serial.println("[WARNING] WiFi not connected. Will retry...");
+        } else {
+            Serial.println("OK");
+            Serial.print("[INIT] IP: ");
+            Serial.println(wifiManager_getIP());
+        }
+    #endif
     
     // Khởi tạo HTTP client
-    Serial.print("[INIT] HTTP client... ");
+    #ifdef DEBUG_ENABLED
+        Serial.print("[INIT] HTTP client... ");
+    #endif
+    
     httpClient_init();
-    Serial.println("OK");
+    
+    #ifdef DEBUG_ENABLED
+        Serial.println("OK");
+    #endif
     
     // Check system status
     systemReady = wifiManager_isConnected();
     
-    Serial.println();
-    if (systemReady) {
-        Serial.println("[INIT] System ready!");
-        Serial.println("[INIT] Waiting for commands from Controller...");
-    } else {
-        Serial.println("[INIT] System partially ready.");
-        Serial.println("[INIT] Some features may not work.");
-    }
-    Serial.println();
+    #ifdef DEBUG_ENABLED
+        Serial.println();
+        if (systemReady) {
+            Serial.println("[INIT] System ready!");
+            Serial.println("[INIT] Waiting for commands from Controller...");
+        } else {
+            Serial.println("[INIT] System partially ready.");
+            Serial.println("[INIT] Some features may not work.");
+        }
+        Serial.println();
+    #endif
     
-    // Thông báo ready
+    // Thông báo ready cho Controller (PROTOCOL MESSAGE - giữ lại)
     if (systemReady) {
         serialComm_sendReady();
     }

@@ -93,15 +93,19 @@
 // 🐛 DEBUG - Bật/Tắt logging
 // ============================================================
 
+// ⚠️ QUAN TRỌNG: ESP32-CAM dùng Serial (UART0) để giao tiếp với Controller
+// KHÔNG được bật debug log khi chạy thực tế vì sẽ xung đột với serial communication!
+// CHỈ bật khi test riêng ESP32-CAM (không nối với Controller)
+
 // Bật logging chi tiết (comment để tắt)
-#define DEBUG_ENABLED
+// #define DEBUG_ENABLED              // ← TẮT khi chạy với Controller
 
 // Log từng module riêng (comment để tắt module không cần)
-#define DEBUG_WIFI
-#define DEBUG_CAMERA
-#define DEBUG_HTTP
-#define DEBUG_SERIAL_COMM
-#define DEBUG_JSON
+// #define DEBUG_WIFI                 // ← TẮT
+// #define DEBUG_CAMERA               // ← TẮT
+// #define DEBUG_HTTP                 // ← TẮT
+// #define DEBUG_SERIAL_COMM          // ← TẮT
+// #define DEBUG_JSON                 // ← TẮT
 
 // ============================================================
 // 📊 SYSTEM INFO
