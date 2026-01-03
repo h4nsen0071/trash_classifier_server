@@ -24,6 +24,10 @@
 #include "serial_comm.h"
 #include "protocol.h"
 
+// Brownout detector disable
+#include "soc/soc.h"
+#include "soc/rtc_cntl_reg.h"
+
 // ============================================================
 // GLOBAL VARIABLES
 // ============================================================
@@ -92,6 +96,9 @@ void handleStatusCommand() {
 // ============================================================
 
 void setup() {
+    // Disable brownout detector - tránh reset khi camera chụp
+    WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);
+    
     // Khởi tạo Serial cho giao tiếp với Controller
     // ⚠️ Serial KHÔNG được dùng để in log khi chạy với Controller!
     serialComm_init();

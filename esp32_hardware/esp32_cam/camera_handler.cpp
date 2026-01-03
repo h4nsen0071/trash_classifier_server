@@ -61,19 +61,21 @@ bool cameraHandler_init() {
     config.grab_mode = CAMERA_GRAB_WHEN_EMPTY;
     config.fb_location = CAMERA_FB_IN_PSRAM;
     
-    // Frame size and quality from config
-    config.frame_size = CAMERA_FRAME_SIZE;
-    config.jpeg_quality = CAMERA_JPEG_QUALITY;
+    // QUAN TRỌNG: Init với UXGA trước, set framesize sau
+    // Giống như CameraWebServer example - tránh lỗi cam_task stack overflow
+    config.frame_size = FRAMESIZE_UXGA;
+    config.jpeg_quality = 12;
     config.fb_count = 1;
     
     // Check PSRAM
     if (psramFound()) {
         LOG_CAM("PSRAM found - using high quality settings");
+        config.jpeg_quality = 10;
         config.fb_count = 2;
         config.grab_mode = CAMERA_GRAB_LATEST;
     } else {
         LOG_CAM("No PSRAM - limiting frame size");
-        config.frame_size = FRAMESIZE_VGA;
+        config.frame_size = FRAMESIZE_SVGA;
         config.fb_location = CAMERA_FB_IN_DRAM;
     }
     
@@ -86,9 +88,12 @@ bool cameraHandler_init() {
         return false;
     }
     
-    // Apply camera settings
+    // Apply camera settings và set frame size thực tế
     sensor_t* sensor = esp_camera_sensor_get();
     if (sensor != NULL) {
+        // Set frame size QVGA (320x240) - phù hợp với model 224x224
+        sensor->set_framesize(sensor, CAMERA_FRAME_SIZE);
+        
         sensor->set_brightness(sensor, CAMERA_BRIGHTNESS);
         sensor->set_contrast(sensor, CAMERA_CONTRAST);
         sensor->set_saturation(sensor, CAMERA_SATURATION);
