@@ -16,16 +16,16 @@ bin_mapping:
   plastic: 2
 
 validation:
-  # Image quality checks (tối ưu cho production)
+  # Image quality checks (điều chỉnh cho ESP32-CAM)
   cv_checks:
-    blur_threshold: 30        # Tăng lên - chỉ reject ảnh thật sự mờ
-    min_brightness: 40        # Độ sáng tối thiểu
-    max_brightness: 240       # Độ sáng tối đa
-    blank_std_threshold: 25   # Tăng lên - reject ảnh không có object rõ ràng
+    blur_threshold: 10        # Giảm xuống - ESP32-CAM có độ nét thấp
+    min_brightness: 25        # Giảm xuống - ESP32-CAM ảnh tối hơn
+    max_brightness: 250       # Tăng lên
+    blank_std_threshold: 10   # Giảm xuống - ESP32-CAM có ít chi tiết hơn
   
   # Model confidence checks
   model_checks:
-    min_confidence: 0.75      # Tăng lên 0.75 cho độ tin cậy cao hơn
+    min_confidence: 0.60      # Giảm xuống cho ESP32-CAM
 
 server:
   host: "0.0.0.0"

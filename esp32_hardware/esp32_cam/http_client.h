@@ -31,7 +31,15 @@ struct ClassificationResult {
 void httpClient_init();
 
 /**
- * Gửi ảnh lên server để phân loại
+ * Gửi ảnh raw JPEG lên server để phân loại (Recommended)
+ * @param imageData Con trỏ đến buffer ảnh JPEG
+ * @param imageLen Kích thước buffer (bytes)
+ * @return ClassificationResult
+ */
+ClassificationResult httpClient_classifyRaw(uint8_t* imageData, size_t imageLen);
+
+/**
+ * Gửi ảnh lên server để phân loại (DEPRECATED - dùng classifyRaw thay thế)
  * @param imageBase64 Ảnh đã encode base64
  * @return ClassificationResult
  */

@@ -35,32 +35,24 @@ static bool systemReady = false;
 // ============================================================
 
 void handleCaptureCommand() {
-    // Log để debug (sẽ đi ra Serial - Controller có thể ignore)
-    // Trong production, bỏ các Serial.print này
-    
-    #ifdef DEBUG_ENABLED
-        // Gửi debug info qua Serial2 nếu có
-        // Hoặc bỏ qua để không làm nhiễu serial chính
-    #endif
-    
     // Kiểm tra WiFi
     if (!wifiManager_isConnected()) {
         serialComm_sendError(ERR_WIFI_DISCONNECTED);
         return;
     }
     
-    // Chụp ảnh và encode base64
-    String imageBase64;
-    if (!cameraHandler_captureToBase64(imageBase64)) {
+    // Chụp ảnh raw JPEG
+    camera_fb_t* fb = cameraHandler_capture();
+    if (!fb) {
         serialComm_sendError(ERR_CAPTURE_FAILED);
         return;
     }
     
-    // Gửi lên server
-    ClassificationResult result = httpClient_classify(imageBase64);
+    // Gửi raw JPEG lên server
+    ClassificationResult result = httpClient_classifyRaw(fb->buf, fb->len);
     
-    // Giải phóng memory
-    imageBase64 = "";
+    // Giải phóng frame buffer
+    cameraHandler_releaseFrame(fb);
     
     // Xử lý kết quả
     if (result.success) {
@@ -130,6 +122,15 @@ void setup() {
             Serial.println("OK");
         }
     #endif
+    
+    // ⚠️ Nếu camera lỗi, gửi ERROR ngay
+    if (!cameraOK) {
+        delay(1000);
+        serialComm_sendError(ERR_CAMERA_INIT_FAILED);
+        // Không khởi tạo WiFi/HTTP nếu camera lỗi
+        systemReady = false;
+        return; // Dừng setup(), không tiếp tục
+    }
     
     // Khởi tạo WiFi
     #ifdef DEBUG_ENABLED
