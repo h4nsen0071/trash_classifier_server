@@ -43,6 +43,14 @@ static CamResponseData parseResponse(String& data) {
         return response;
     }
     
+    // Ignore ESP32 boot messages
+    if (data.indexOf("rst:") >= 0 || data.indexOf("boot:") >= 0 ||
+        data.indexOf("configsip:") >= 0 || data.indexOf("mode:") >= 0 ||
+        data.indexOf("load:") >= 0 || data.indexOf("entry:") >= 0 ||
+        data.indexOf("ets") >= 0 || data.indexOf("clk_drv:") >= 0) {
+        return response; // Ignore
+    }
+    
     LOG_SERIAL_VAL("RX: ", data);
     
     // Check for BIN response: "BIN:1", "BIN:2", "BIN:3"

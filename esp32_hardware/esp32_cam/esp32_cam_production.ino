@@ -1,12 +1,16 @@
 /**
- * @file esp32_cam.ino
- * @brief Smart Bin Camera - Main Entry Point
+ * @file esp32_cam.ino  
+ * @brief Smart Bin Camera - Main Entry Point (PRODUCTION VERSION - NO DEBUG LOG)
  * 
  * ESP32-CAM quản lý:
  * - Kết nối WiFi
  * - Chụp ảnh với camera OV2640
  * - Gửi ảnh lên server để phân loại
  * - Giao tiếp Serial với ESP32 Controller
+ * 
+ * ⚠️ QUAN TRỌNG: TẤT CẢ DEBUG LOG ĐÃ ĐƯỢC TẮT
+ * ESP32-CAM chỉ gửi protocol messages (READY, BIN:X, ERROR:X, PONG)
+ * KHÔNG in bất kỳ debug log nào để tránh xung đột với serial communication
  * 
  * @author SmartBin Team
  * @version 1.0.0
@@ -23,10 +27,6 @@
 #include "http_client.h"
 #include "serial_comm.h"
 #include "protocol.h"
-
-// Brownout detector disable
-#include "soc/soc.h"
-#include "soc/rtc_cntl_reg.h"
 
 // ============================================================
 // GLOBAL VARIABLES
@@ -45,18 +45,18 @@ void handleCaptureCommand() {
         return;
     }
     
-    // Chụp ảnh raw JPEG
-    camera_fb_t* fb = cameraHandler_capture();
-    if (!fb) {
+    // Chụp ảnh và encode base64
+    String imageBase64;
+    if (!cameraHandler_captureToBase64(imageBase64)) {
         serialComm_sendError(ERR_CAPTURE_FAILED);
         return;
     }
     
-    // Gửi raw JPEG lên server
-    ClassificationResult result = httpClient_classifyRaw(fb->buf, fb->len);
+    // Gửi lên server
+    ClassificationResult result = httpClient_classify(imageBase64);
     
-    // Giải phóng frame buffer
-    cameraHandler_releaseFrame(fb);
+    // Giải phóng memory
+    imageBase64 = "";
     
     // Xử lý kết quả
     if (result.success) {
@@ -82,12 +82,10 @@ void handlePingCommand() {
 }
 
 void handleStatusCommand() {
-    if (systemReady && wifiManager_isConnected()) {
+    if (wifiManager_isConnected()) {
         serialComm_sendReady();
-    } else if (!wifiManager_isConnected()) {
-        serialComm_sendError(ERR_WIFI_DISCONNECTED);
     } else {
-        serialComm_sendError(ERR_CAMERA_INIT_FAILED);
+        serialComm_sendError(ERR_WIFI_DISCONNECTED);
     }
 }
 
@@ -96,96 +94,31 @@ void handleStatusCommand() {
 // ============================================================
 
 void setup() {
-    // Disable brownout detector - tránh reset khi camera chụp
-    WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);
+    // Khởi tạo Serial communication
+    serialComm_init();
     
-    // Khởi tạo Serial - GIỐNG TEST FILE
-    Serial.begin(SERIAL_BAUD);
-    Serial.setDebugOutput(true);  // Quan trọng cho camera init
-    delay(1000);  // Delay đủ lâu để camera power up ổn định
+    // ⚠️ KHÔNG in log khi chạy production (xung đột với serial protocol)
+    // Tất cả debug log đã được tắt bằng cách comment DEBUG_ENABLED trong config.h
     
-    #ifdef DEBUG_ENABLED
-        // Startup message (CHỈ hiện khi debug - test riêng CAM)
-        Serial.println();
-        Serial.println("========================================");
-        Serial.println("    Smart Bin Camera v" FIRMWARE_VERSION);
-        Serial.println("========================================");
-        Serial.println();
-    #endif
+    // Khởi tạo Camera (im lặng - không in log)
+    bool cameraOk = cameraHandler_init();
     
-    // Khởi tạo Camera
-    #ifdef DEBUG_ENABLED
-        Serial.print("[INIT] Camera... ");
-    #endif
+    // Khởi tạo WiFi (im lặng - không in log)
+    bool wifiOk = wifiManager_init();
     
-    bool cameraOK = cameraHandler_init();
-    
-    #ifdef DEBUG_ENABLED
-        if (!cameraOK) {
-            Serial.println("FAILED!");
-            Serial.println("[ERROR] Camera init failed. Check connections.");
-        } else {
-            Serial.println("OK");
-        }
-    #endif
-    
-    // ⚠️ Nếu camera lỗi, gửi ERROR ngay
-    if (!cameraOK) {
-        delay(1000);
-        serialComm_sendError(ERR_CAMERA_INIT_FAILED);
-        // Không khởi tạo WiFi/HTTP nếu camera lỗi
-        systemReady = false;
-        return; // Dừng setup(), không tiếp tục
-    }
-    
-    // Khởi tạo WiFi
-    #ifdef DEBUG_ENABLED
-        Serial.print("[INIT] WiFi... ");
-    #endif
-    
-    bool wifiOK = wifiManager_init();
-    
-    #ifdef DEBUG_ENABLED
-        if (!wifiOK) {
-            Serial.println("FAILED!");
-            Serial.println("[WARNING] WiFi not connected. Will retry...");
-        } else {
-            Serial.println("OK");
-            Serial.print("[INIT] IP: ");
-            Serial.println(wifiManager_getIP());
-        }
-    #endif
-    
-    // Khởi tạo HTTP client
-    #ifdef DEBUG_ENABLED
-        Serial.print("[INIT] HTTP client... ");
-    #endif
-    
+    // Khởi tạo HTTP client (im lặng - không in log)
     httpClient_init();
-    
-    #ifdef DEBUG_ENABLED
-        Serial.println("OK");
-    #endif
     
     // Check system status
     systemReady = wifiManager_isConnected();
     
-    #ifdef DEBUG_ENABLED
-        Serial.println();
-        if (systemReady) {
-            Serial.println("[INIT] System ready!");
-            Serial.println("[INIT] Waiting for commands from Controller...");
-        } else {
-            Serial.println("[INIT] System partially ready.");
-            Serial.println("[INIT] Some features may not work.");
-        }
-        Serial.println();
-    #endif
-    
-    // Thông báo ready cho Controller (PROTOCOL MESSAGE - giữ lại)
+    // Thông báo ready (PROTOCOL MESSAGE - không phải debug log)
     if (systemReady) {
         serialComm_sendReady();
     }
+    
+    // System đã sẵn sàng, không in gì cả
+    // Chỉ chờ commands từ Controller
 }
 
 // ============================================================
