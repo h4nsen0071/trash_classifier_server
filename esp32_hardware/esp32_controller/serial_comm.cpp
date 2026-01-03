@@ -101,8 +101,9 @@ void serialComm_init() {
 }
 
 void serialComm_sendCapture() {
-    LOG_SERIAL("TX: CAPTURE");
+    Serial.println("[SERIAL] TX: CAPTURE");
     CamSerial.println(CMD_CAPTURE);
+    CamSerial.flush();  // Đảm bảo gửi xong
 }
 
 void serialComm_sendPing() {
@@ -132,24 +133,31 @@ CamResponseData serialComm_waitResponse(unsigned long timeoutMs) {
     
     unsigned long startTime = millis();
     
-    LOG_SERIAL_VAL("Waiting for response, timeout: ", timeoutMs);
+    Serial.print("[SERIAL] Waiting ");
+    Serial.print(timeoutMs);
+    Serial.println("ms for CAM response...");
     
     while (millis() - startTime < timeoutMs) {
         if (CamSerial.available()) {
-            String data = CamSerial.readStringUntil(MSG_TERMINATOR);
+            String data = CamSerial.readStringUntil('\n');
+            
+            // DEBUG: In ra tất cả dữ liệu nhận được
+            Serial.print("[SERIAL] RAW RX: '");
+            Serial.print(data);
+            Serial.println("'");
+            
             response = parseResponse(data);
             
-            if (response.type != RESPONSE_NONE) {
+            if (response.type == RESPONSE_BIN || response.type == RESPONSE_ERROR) {
                 return response;
             }
         }
         
-        // Yield to other tasks
         delay(10);
     }
     
     // Timeout
-    LOG_SERIAL("Response timeout!");
+    Serial.println("[SERIAL] TIMEOUT - no valid response");
     response.type = RESPONSE_TIMEOUT;
     return response;
 }

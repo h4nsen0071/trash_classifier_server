@@ -275,7 +275,7 @@ void setup() {
     WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);
     
     Serial.begin(SERIAL_BAUD);
-    Serial.setDebugOutput(true);
+    // Serial.setDebugOutput(true);  // TẮT - gây nhiễu khi nối với Controller
     delay(1000);
     
     // Init camera

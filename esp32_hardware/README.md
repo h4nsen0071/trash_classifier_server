@@ -1,6 +1,15 @@
 # 🔧 ESP32 Smart Bin Hardware - Modular Architecture
 
-## 📁 Cấu trúc thư mục
+## � TÀI LIỆU HƯỚNG DẪN
+
+- **[QUICK_START.md](QUICK_START.md)** - Bắt đầu nhanh (dành cho người đã quen ESP32)
+- **[HUONG_DAN_ARDUINO_IDE.md](HUONG_DAN_ARDUINO_IDE.md)** - Hướng dẫn chi tiết cài đặt Arduino IDE và nạp code
+- **[HUONG_DAN_DAU_NOI.md](HUONG_DAN_DAU_NOI.md)** - Hướng dẫn đấu nối phần cứng từng bước
+- **[README.md](README.md)** (file này) - Tổng quan dự án và cấu trúc code
+
+---
+
+## �📁 Cấu trúc thư mục
 
 ```
 esp32_hardware/
@@ -356,7 +365,8 @@ Mở Serial Monitor (115200 baud) để xem logs:
 1. Kiểm tra TX-RX đấu chéo
 2. Kiểm tra GND chung
 3. Kiểm tra baud rate = 115200 ở cả 2 boards
-4. Thử gửi "PING" từ Serial Monitor → phải nhận "PONG"
+4. **Tắt debug log trên ESP32-CAM** (xem [DEBUG_SERIAL_COMMUNICATION.md](DEBUG_SERIAL_COMMUNICATION.md))
+5. Thử gửi "PING" từ Serial Monitor → phải nhận "PONG"
 
 ### HC-SR04 không phát hiện
 1. Kiểm tra TRIG (G18) và ECHO (G19)

@@ -36,6 +36,14 @@
 // === DEBUG (comment để tắt) ===
 #define DEBUG_ENABLED
 
+// Debug từng module (cần DEBUG_ENABLED)
+#define DEBUG_DISTANCE
+#define DEBUG_SERVO
+#define DEBUG_STATE
+#define DEBUG_SERIAL_COMM
+#define DEBUG_LED
+#define DEBUG_LCD
+
 // === SYSTEM INFO ===
 #define FIRMWARE_VERSION        "1.0.0"
 
